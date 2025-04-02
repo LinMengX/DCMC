@@ -1,10 +1,4 @@
 
-PyTorch implementation for paper [Decoupled Contrastive Multi-View Clustering with High-Order Random Walks](https://arxiv.org/pdf/2308.11164.pdf) (AAAI 2024)
-
-
-
-![framework](figure//Overview.png)
-
 ## Requirements
 
 pytorch>=1.13.0 
