@@ -13,11 +13,7 @@ PyYAML>=6.0.2
 scikit_learn>=1.4.2  
 scipy>=1.10.1  
 
-<<<<<<< HEAD
 All required packages are listed in the [requirements.txt](./requirements.txt) file.
-=======
-![framework](figure\\overview_DCMC.png)
->>>>>>> fc87a1888369993210944cd509d4993375509c05
 
 ## 📊 Datasets
 
