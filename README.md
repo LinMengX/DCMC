@@ -3,7 +3,7 @@ PyTorch implementation for paper [Decoupled Contrastive Multi-View Clustering wi
 
 
 
-![framework](figure//Overview.png)
+![framework](figure\overview_DCMC.png)
 
 ## Requirements
 
