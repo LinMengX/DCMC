@@ -53,14 +53,6 @@ def train_one_epoch(model: torch.nn.Module,
         metric_logger.update(lr=lr)
         metric_logger.update(loss=loss_value)
 
-    # gather the stats from all processes
-    # if args.print_this_epoch:
-    #     print("Averaged stats:", metric_logger)
-    #     eval_result = evaluate(model, data_loader_test, device, epoch, args)
-    # else:
-    #     eval_result = None
-
-    #print("Averaged stats:", metric_logger)
     eval_result = evaluate(model, data_loader_test, device, epoch, args)
     return eval_result
 

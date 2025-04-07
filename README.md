@@ -1,48 +1,33 @@
+# Decoupled contrastive multi-view clustering with adaptive false negative elimination for cancer subtyping
 
-PyTorch implementation for paper [Decoupled Contrastive Multi-View Clustering with High-Order Random Walks](https://arxiv.org/pdf/2308.11164.pdf) (AAAI 2024)
+## 🧠 DCMC_model
+![framework](figure/overview_DCMC.png)
 
+## 📦 Requirements
 
+pytorch>=1.13.0  
+munkres>=1.1.4  
+numpy>=1.23.4  
+pandas>=2.2.3  
+PyYAML>=6.0.2  
+scikit_learn>=1.4.2  
+scipy>=1.10.1  
 
-![framework](figure\overview_DCMC.png)
+All required packages are listed in the [requirements.txt](./requirements.txt) file.
 
-## Requirements
+## 📊 Datasets
 
-pytorch>=1.13.0 
+The multi-omics and patient clinical data for 10 cancers used in this study are publicly available.  
+Data can be accessed via the TCGA platform at https://portal.gdc.cancer.gov, while all multi-omics, survival, and clinical data employed in our experiments are sourced from http://acgt.cs.tau.ac.il/multi_omic_benchmark/download.html.
 
-numpy>=1.23.4
+## 🚀 Training
 
-scikit-learn>=0.0.post1
-
-munkres>=1.1.4
-
-## Datasets
-
-You could find the dataset we used in the paper at [Google Drive](https://drive.google.com/drive/folders/1TEDxpnrm3cCJURtP7XmjqJxypArwsiXT?usp=drive_link).
-
-
-## Training
-
-The hyper-parameters, the training options are defined in the configure file.
-
-
-~~~bash
-main_train.py --config_file=config/Scene15.yaml
-~~~
+For the 10 cancer datasets, the hyper-parameters and training options are defined in the configuration file.
 
 ~~~bash
-main_train.py --config_file=config/Caltech101.yaml
+main_train.py --config_file=config/caner_name.yaml
 ~~~
 
-## Reference
+## 📬 Contact
 
-If you find our work useful in your research, please consider citing:
-
-```latex
-@article{lu2024decoupled,
-  title={Decoupled Contrastive Multi-view Clustering with High-order Random Walks},
-  author={Lu, Yiding and Lin, Yijie and Yang, Mouxing and Peng, Dezhong and Hu, Peng and Peng, Xi},
-  journal={Thirty-Eighth AAAI Conference on Artificial Intelligence},
-  year={2024}
-}
-```
-
+If you have any questions, please feel free to contact us using the email address provided in the article.

@@ -12,7 +12,7 @@ import torch
 import yaml
 from torch.utils import data
 
-from model import DIVIDE
+from model import DCMC
 import utils
 from engine_train import train_one_epoch
 from dataset_loader import load_dataset, IncompleteDatasetSampler
@@ -24,7 +24,7 @@ def get_args_parser():
     parser = argparse.ArgumentParser(description='Training')
 
     # config path
-    parser.add_argument('--config_file', type=str, default='config/liver.yaml')
+    parser.add_argument('--config_file', type=str, default='config/aml.yaml')
 
     # backbone parameters
     parser.add_argument('--encoder_dim', type=list, nargs='+', default=[])
@@ -113,7 +113,7 @@ def train_one_time(args, state_logger):
         drop_last=False,
     )
 
-    model = DIVIDE(n_views=args.n_views,
+    model = DCMC(n_views=args.n_views,
                    layer_dims=args.encoder_dim,
                    temperature=args.temperature,
                    n_classes=args.n_classes,
@@ -134,29 +134,11 @@ def train_one_time(args, state_logger):
 
     state_logger.write('\n>> Start training {}-th initial, seed: {},'.format(args.train_id, args.seed))
 
-    # for epoch in range(args.start_epoch, args.epochs):
-    #     args.print_this_epoch = (epoch + 1) % args.print_freq == 0 or epoch + 1 == args.epochs
-    #     train_state = train_one_epoch(
-    #         model, data_loader_train, data_loader_test,
-    #         optimizer,
-    #         device, epoch,
-    #         state_logger,
-    #         args
-    #     )
-    #     if args.output_dir and epoch + 1 == args.epochs:
-    #         torch.save(model, args.output_dir + f"checkpoint_{epoch}")
-    #     if args.print_this_epoch:
-    #         state_logger.write('Epoch {} K-means:  log10p = {:.4f} cnt = {:}'
-    #                         .format(epoch, train_state['log10p'], train_state['cnt'],
-    #                                 ))
-    # return train_state
-    # 训练循环。对每个 epoch 进行训练。
-    # 初始化最大的 log10p 和 cnt
     max_log10p = None
     max_cnt = None
     max_y_pred = None
     for epoch in range(args.start_epoch, args.epochs):
-        # 调用 train_one_epoch 函数进行单个 epoch 的训练，并返回训练状态。
+
         train_state = train_one_epoch(
             model, data_loader_train, data_loader_test,
             optimizer,
@@ -164,26 +146,22 @@ def train_one_time(args, state_logger):
             state_logger,
             args
         )
-        # 在最后一个 epoch 或指定的输出目录时保存模型检查点。
+
         if args.output_dir and epoch + 1 == args.epochs:
             torch.save(model, args.output_dir + f"checkpoint_{epoch}")
 
 
-        state_logger.write('Epoch {} K-means:  log10p = {:.4f} cnt = {:}'
-                                 .format(epoch, train_state['log10p'], train_state['cnt'],
-                                         ))
-        # 更新并保存最大值
         if max_log10p is None or train_state['log10p'] > max_log10p:
             max_log10p = train_state['log10p']
             max_y_pred = train_state['y_pred']
-            # print(max_y_pred)
+
         if max_cnt is None or train_state['cnt'] > max_cnt:
             max_cnt = train_state['cnt']
         if epoch + 1 == args.epochs:
             train_state['log10p'] = max_log10p
             train_state['cnt'] = max_cnt
             train_state['y_pred'] = max_y_pred
-    return train_state # 返回最终的训练状态。
+    return train_state
 
 def main(args):
     start_time = time.time()
@@ -204,7 +182,6 @@ def main(args):
 
         for k, v in train_state.items():
             result_avr[k].append(v)
-            # 比较并保存最大的 log10p 和 cnt
             if k == 'log10p':
                 if max_results['max_log10p'] is None or v > max_results['max_log10p']:
                     max_results['max_log10p'] = v
@@ -212,11 +189,8 @@ def main(args):
                 if max_results['max_cnt'] is None or v > max_results['max_cnt']:
                     max_results['max_cnt'] = v
             elif k == 'y_pred':
-                if max_results['max_log10p'] == result_avr['log10p'][-1]:  # 如果 log10p 是当前最大的
+                if max_results['max_log10p'] == result_avr['log10p'][-1]:
                     max_results['y_pred'] = v
-    # for k, v in result_avr.items():
-    #     x = np.asarray(v) * 100
-    #     result_avr[k] = [x.mean(), x.std()]
 
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))

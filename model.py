@@ -55,9 +55,9 @@ class DCMC(torch.nn.Module):
         self.online_encoder = nn.ModuleList([FCN(layer_dims[i], drop_out=drop_rate) for i in range(n_views)])
         self.target_encoder = copy.deepcopy(self.online_encoder)
 
-        for param_q, param_k in zip(self.online_encoder.parameters(), self.target_encoder.parameters()):
-            param_k.data.copy_(param_q.data)  # initialize
-            param_k.requires_grad = False  # not update by gradient
+        for theta_a, theta_b in zip(self.online_encoder.parameters(), self.target_encoder.parameters()):
+            theta_b.data.copy_(theta_a.data)  # initialize
+            theta_b.requires_grad = False  # not updated by gradient
 
         self.cross_view_decoder = nn.ModuleList([MLP(layer_dims[i][-1], layer_dims[i][-1]) for i in range(n_views)])
 
@@ -66,84 +66,71 @@ class DCMC(torch.nn.Module):
 
     def forward(self, data, momentum, warm_up):
         self._update_target_branch(momentum)
-        z_g = torch.tensor([],device='cuda')
-        z_q = [self.online_encoder[i](data[i]) for i in range(self.n_views)]
-        for z in z_q:
-            z_g = torch.cat((z_g, z), 0) 
-        p = [self.cross_view_decoder[i](z_q[i]) for i in range(self.n_views)]
-        z_k = [self.target_encoder[i](data[i]) for i in range(self.n_views)]
-        if warm_up:
-            mp = torch.eye(z_q[0].shape[0]).cuda()
-            mp = [mp, mp, mp]
-        else:
-            mp = [self.cal_similiarity_matrix(z_k[i]) for i in range(self.n_views)]
-            # mp = [self.cal_similiarity_matrix(z_k[i], 10) for i in range(self.n_views)]
 
-        l_intra = (self.cl(z_q[0], z_k[0], mp[0]) + self.cl(z_q[1], z_k[1], mp[1]) + self.cl(z_q[2], z_k[2], mp[2])) / 3
-        l_inter = (self.cl(p[0], z_k[1], mp[1]) + self.cl(p[0], z_k[2], mp[2]) + self.cl(p[1], z_k[0], mp[0]) + self.cl(p[1], z_k[2], mp[2])
-                   + self.cl(p[2], z_k[0], mp[0]) + self.cl(p[2], z_k[1], mp[1])) / 6
+        f_a = [self.online_encoder[i](data[i]) for i in range(self.n_views)]
+
+        Q = [self.cross_view_decoder[i](f_a[i]) for i in range(self.n_views)]
+        f_b = [self.target_encoder[i](data[i]) for i in range(self.n_views)]
+
+        if warm_up:
+            ne = torch.eye(f_a[0].shape[0]).cuda()
+            ne = [ne, ne, ne]
+        else:
+            ne = [self.cal_similiarity_matrix(f_b[i]) for i in range(self.n_views)]
+            # ne = [self.cal_similiarity_matrix(f_b[i], 10) for i in range(self.n_views)]
+
+        l_intra = (self.cl(f_a[0], f_b[0], ne[0]) + self.cl(f_a[1], f_b[1], ne[1]) + self.cl(f_a[2], f_b[2], ne[2])) / 3
+        l_inter = (self.cl(Q[0], f_b[1], ne[1]) + self.cl(Q[0], f_b[2], ne[2]) + self.cl(Q[1], f_b[0], ne[0]) +
+                   self.cl(Q[1], f_b[2], ne[2]) + self.cl(Q[2], f_b[0], ne[0]) + self.cl(Q[2], f_b[1], ne[1])) / 6
 
         loss = l_inter + l_intra
         return loss
 
-
     @torch.no_grad()
-    def cal_similiarity_matrix(self, z,temperature=0.1):
-        z = L2norm(z)
-        #cos_sim_fix = torch.matmul(z, z.T)
-        cos_sim_fix = (2 - 2 * torch.matmul(z, z.T)).clamp(min=0.)
-        cos_sim_fix = torch.exp(-cos_sim_fix / temperature)
-        cos_sim_fix = cos_sim_fix / cos_sim_fix.sum(dim=1, keepdim=True)  
-        cos_sim_diag = torch.diag(cos_sim_fix).unsqueeze(1) * torch.ones(1, cos_sim_fix.size(0), device='cuda')
-        
-        cos_sim_diff = torch.abs(cos_sim_diag - cos_sim_fix)
-        
-        threshold_weights = torch.where(cos_sim_diff < 0.8, 1, 0)
-      
-        threshold_weights = threshold_weights.to(device='cuda')
-       
-        cos_sim_diff = cos_sim_diff + torch.eye(cos_sim_fix.size(0), device='cuda')
-        
-        _, topkind = torch.topk(cos_sim_diff, 3, dim=1, largest=False)  # minimum value
-      
-        topkind_expand = torch.eye(cos_sim_fix.size(0), device=z.device)[topkind]
-       
-        topkind_expand = topkind_expand.to(device='cuda')
-        
-        topkind_false = torch.zeros_like(cos_sim_fix, device='cuda')
-        
-        for i in range(cos_sim_fix.size(0)):
-            for j in range(1):
-                topkind_false[i] += topkind_expand[i][j]
-        
-        topkind_false = topkind_false + torch.eye(cos_sim_fix.size(0), device='cuda')
-       
-        topk_threshold = threshold_weights * topkind_false
+    def cal_similiarity_matrix(self, features, temperature=0.1):
+        features = L2norm(features)  # L2 normalization
 
-        cos_sim_diag = torch.exp(cos_sim_fix) - torch.diag_embed(torch.diag(torch.exp(cos_sim_fix)))
-        
-        cos_sim_weight = torch.ones_like(cos_sim_fix, device='cuda') - cos_sim_diag / (
-            torch.sum(cos_sim_diag, dim=1).unsqueeze(1))
-       
-        false_negative_weight = topk_threshold * cos_sim_weight
-        
-        non_false_negative_weight = torch.ones_like(cos_sim_fix, device='cuda') - topk_threshold
-        
-        topk_threshold_dynamic = false_negative_weight + non_false_negative_weight
-        
-        cos_sim = cos_sim_fix * topk_threshold_dynamic
-       
-        return cos_sim  
+        euclidean_sim = (2 - 2 * torch.matmul(features, features.T)).clamp(min=0.)
+        sim_matrix = torch.exp(-euclidean_sim / temperature)
+        sim_matrix = sim_matrix / sim_matrix.sum(dim=1, keepdim=True)
+
+        self_sim_column = torch.diag(sim_matrix).unsqueeze(1)
+        self_sim_matrix = self_sim_column * torch.ones(1, sim_matrix.size(0), device='cuda')
+
+        sim_difference = torch.abs(self_sim_matrix - sim_matrix)
+
+        threshold_filter = torch.where(sim_difference < 0.7, 1, 0).to(device='cuda')
+
+        sim_difference = sim_difference + torch.eye(sim_matrix.size(0), device='cuda')
+
+        _, topk_indices = torch.topk(sim_difference, 3, dim=1, largest=False)
+        topk_selector = torch.eye(sim_matrix.size(0), device='cuda')[topk_indices]
+
+        possible_fn = torch.zeros_like(sim_matrix, device='cuda')
+        for i in range(sim_matrix.size(0)):
+            for j in range(1):  # j=0
+                possible_fn[i] += topk_selector[i][j]
+
+        possible_fn = possible_fn + torch.eye(sim_matrix.size(0), device='cuda')
+
+        selected_fn = threshold_filter * possible_fn
+
+        sim_matrix_exp = torch.exp(sim_matrix) - torch.diag_embed(torch.diag(torch.exp(sim_matrix)))
+        weight_matrix = 1 - sim_matrix_exp / sim_matrix_exp.sum(dim=1, keepdim=True)
+
+        fn_weight = selected_fn * weight_matrix
+        rest_weight = 1 - selected_fn
+
+        adaptive_weight = fn_weight + rest_weight
+        weighted_sim_matrix = sim_matrix * adaptive_weight
+
+        return weighted_sim_matrix
 
     @torch.no_grad()
     def _update_target_branch(self, momentum):
         for i in range(self.n_views):
-            for param_k, param_q in zip(self.online_encoder[i].parameters(), self.target_encoder[i].parameters()):
-                param_k.data = param_k.data * momentum + param_q.data * (1 - momentum)
-    def _update_target_branch(self, momentum):
-        for i in range(self.n_views):
-            for param_o, param_t in zip(self.online_encoder[i].parameters(), self.target_encoder[i].parameters()):
-                param_t.data = param_t.data * momentum + param_o.data * (1 - momentum)
+            for theta_b, theta_a in zip(self.online_encoder[i].parameters(), self.target_encoder[i].parameters()):
+                theta_b.data = theta_b.data * momentum + theta_a.data * (1 - momentum)
 
     @torch.no_grad()
     def extract_feature(self, data, mask):

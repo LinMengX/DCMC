@@ -16,5 +16,5 @@ weight_decay: 0
 data_path: data/
 survival_data_path: data/survival
 clinical_data_path : data/clinical
-output_dir: DIVIDE
+output_dir: DCMC
 seed: 1
