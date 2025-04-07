@@ -1,0 +1,20 @@
+dataset: melanoma
+
+encoder_dim:
+  - [ 2000, 1024, 1024, 1024, 128 ]
+  - [ 901, 1024, 1024, 1024, 128 ]
+  - [ 2000, 1024, 1024, 1024, 128 ]
+n_classes: 5
+
+batch_size: 1024
+momentum: 0.98
+temperature: 0.5
+
+blr: 5.0e-4
+weight_decay: 0
+
+data_path: data/
+survival_data_path: data/survival
+clinical_data_path : data/clinical
+output_dir: DIVIDE
+seed: 0

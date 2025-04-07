@@ -7,87 +7,59 @@ from scipy import sparse
 import sklearn.preprocessing as skp
 
 def _check_keys(dict):
-    """
-    检查字典中的条目是否为 mat 对象。如果是，则调用 _todict 将其转换为嵌套字典。
-    """
+   
     for key in dict:
-        # 检查字典中每个条目的类型是否为 sio.matlab.mio5_params.mat_struct 类型
         if isinstance(dict[key], sio.matlab.mio5_params.mat_struct):
-            # 如果是 mat_struct 类型，则调用 _todict 函数将其转换为嵌套字典
+            
             dict[key] = _todict(dict[key])
-            # 打印转换后的字典条目
-            #print("打印转换后的字典条目")
-            #print(dict[key])
-    # 返回转换后的字典
+          
     return dict
 def _todict(matobj):
-    """
-    一个递归函数，用于从 mat 对象构建嵌套字典
-    """
+    
     dict = {}
-    # 创建一个空字典用于存储转换后的键值对
+    
     for strg in matobj._fieldnames:
-        # 遍历 mat 对象的所有字段名
+        
         elem = matobj.__dict__[strg]
-        # 通过字段名访问 mat 对象的属性
+      
         if isinstance(elem, sio.matlab.mio5_params.mat_struct):
-            # 如果属性是 mat_struct 类型，则递归调用 _todict 将其转换为嵌套字典
+            
             dict[strg] = _todict(elem)
         else:
-            # 否则，直接将属性值添加到字典中
+            
             dict[strg] = elem
-    # 返回构建好的嵌套字典
-    #print("构建好的嵌套字典")
-    #print(dict)
     return dict
 def normalization_v2(input, unitNorm=True):
     """ mean 0 std 1, with unit norm """
 
-    # 计算每个样本（行）的均值，并将其形状调整为 (n, 1)
     sampleMean = np.mean(input, axis=1).reshape(input.shape[0], 1)
 
-    # 计算每个样本（行）的标准差，并将其形状调整为 (n, 1)
     sampleStd = np.std(input, axis=1).reshape(input.shape[0], 1)
 
-    # 对输入矩阵进行均值和标准差归一化
     input = (input - sampleMean) / sampleStd
 
-    # 计算每个样本（行）的范数，并将其形状调整为 (n, 1)
     sampleNorm = np.linalg.norm(input, axis=1).reshape(input.shape[0], 1)
 
-    # 如果需要单位范数归一化
     if unitNorm:
-        # 将输入矩阵除以每个样本的范数，实现单位范数归一化
         input = input / sampleNorm
-
-    # 返回归一化后的输入矩阵
     return input
 def load_mat(args):
     data_X = []
     label_y = None
-    #data_path = "./data"
-    view_names = ['exp', 'mirna', 'methy']  # 视图名称列表
+    view_names = ['exp', 'mirna', 'methy']  
     cancerName = args.dataset
     fileName = cancerName + '.mat'
     filePath = args.data_path + '/' + fileName
     mat = _check_keys(sio.loadmat(filePath, struct_as_record=False, squeeze_me=True))
-    # print(mat)
     for vname in view_names:
-        # 获取当前视图的数据并转换为 numpy 数组
         curData = np.array(list(mat[vname].values()))
-        # print("获取当前视图的数据并转换为 numpy 数组")
-        #print("标准化前")
-        #print(curData)
-        # 两种标准化方法
+       
         curData = normalization_v2(curData)
         # curData = skp.normalize(curData)
-        #print("标准化后")
-        #print(curData)
-        # 对数据进行标准化并转换为 PyTorch 张量，类型为 float
+        
         data_X.append(torch.from_numpy(curData).float())
     labels = list(mat[view_names[0]].keys())
     args.n_sample = len(labels)
-    #print(data_X[0].shape[0])
     print(f'Number of views: {len(data_X)}\nNumber of samples: {len(labels)}')
     return data_X, labels
 
@@ -104,7 +76,7 @@ class MultiviewDataset(torch.utils.data.Dataset):
         super(MultiviewDataset, self).__init__()
         self.n_views = n_views
         self.data = data_X
-        #self.targets = label_y - np.min(label_y)
+       
 
     def __len__(self):
         return self.data[0].shape[0]
@@ -114,8 +86,7 @@ class MultiviewDataset(torch.utils.data.Dataset):
         for i in range(self.n_views):
             #data.append(torch.tensor(self.data[i][idx].astype('float32')))
             data.append(self.data[i][idx].float())
-        #label = torch.tensor(self.targets[idx], dtype=torch.long)
-        #return idx, data, label
+       
         return idx, data
 
 import numpy as np
@@ -128,7 +99,7 @@ class IncompleteMultiviewDataset(torch.utils.data.Dataset):
         super(IncompleteMultiviewDataset, self).__init__()
         self.n_views = n_views
         self.data = data_X
-        #self.targets = label_y - np.min(label_y)
+       
 
         self.missing_mask = torch.from_numpy(self._get_mask(n_views, self.data[0].shape[0], missing_rate)).bool()
 
@@ -138,21 +109,16 @@ class IncompleteMultiviewDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         data = []
         for i in range(self.n_views):
-            #data.append(torch.tensor(self.data[i][idx].astype('float32')))
+           
             data.append(self.data[i][idx].float())
-        # label = torch.tensor(self.targets[idx], dtype=torch.long)
+      
         mask = self.missing_mask[idx]
-        # return idx, data , mask ,label
+        
         return idx, data, mask
 
     @staticmethod
     def _get_mask(view_num, alldata_len, missing_rate):
-        """Randomly generate incomplete data information, simulate partial view data with complete view data
-        :param view_num:view number
-        :param alldata_len:number of samples
-        :param missing_rate:Defined in section 4.1 of the paper
-        :return: mask
-        """
+        
         full_matrix = np.ones((int(alldata_len * (1 - missing_rate)), view_num))
 
         alldata_len = alldata_len - int(alldata_len * (1 - missing_rate))
@@ -218,9 +184,3 @@ class IncompleteDatasetSampler:
 
     def set_epoch(self, epoch: int):
         self.epoch = epoch
-
-
-# class DatasetWithIndex(Dataset):
-#     def __getitem__(self, idx):
-#         img, label = super(DatasetWithIndex, self).__getitem__(idx)
-#         return idx, img, label
