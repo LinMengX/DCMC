@@ -1,4 +1,4 @@
-dataset: colon
+dataset: coad
 
 encoder_dim:
   - [ 2000, 1024, 1024, 1024, 128 ]

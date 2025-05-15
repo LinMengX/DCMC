@@ -1,10 +1,10 @@
-dataset: kidney
+dataset: skcm
 
 encoder_dim:
   - [ 2000, 1024, 1024, 1024, 128 ]
-  - [ 796, 1024, 1024, 1024, 128 ]
+  - [ 901, 1024, 1024, 1024, 128 ]
   - [ 2000, 1024, 1024, 1024, 128 ]
-n_classes: 4
+n_classes: 5
 
 batch_size: 1024
 momentum: 0.98

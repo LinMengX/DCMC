@@ -1,10 +1,10 @@
-dataset: liver
+dataset: kirc
 
 encoder_dim:
   - [ 2000, 1024, 1024, 1024, 128 ]
-  - [ 852, 1024, 1024, 1024, 128 ]
+  - [ 796, 1024, 1024, 1024, 128 ]
   - [ 2000, 1024, 1024, 1024, 128 ]
-n_classes: 5
+n_classes: 4
 
 batch_size: 1024
 momentum: 0.98
