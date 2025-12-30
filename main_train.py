@@ -24,7 +24,7 @@ def get_args_parser():
     parser = argparse.ArgumentParser(description='Training')
 
     # config path
-    parser.add_argument('--config_file', type=str, default='config/aml.yaml')
+    parser.add_argument('--config_file', type=str, default='config/brca.yaml')
 
     # backbone parameters
     parser.add_argument('--encoder_dim', type=list, nargs='+', default=[])

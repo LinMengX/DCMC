@@ -1,0 +1,195 @@
+Batch size: 183
+Start time: 2025-09-18 21:12
+Train parameters: Namespace(config_file='config/kirc.yaml',
+encoder_dim=[[2000,
+1024,
+1024,
+1024,
+128],
+[796,
+1024,
+1024,
+1024,
+128],
+[2000,
+1024,
+1024,
+1024,
+128]],
+embed_dim=128,
+temperature=0.5,
+start_rectify_epoch=100,
+momentum=0.98,
+drop_rate=0.2,
+n_views=3,
+n_classes=4,
+batch_size=183,
+epochs=200,
+warmup_epochs=20,
+data_norm='standard',
+train_time=5,
+weight_decay=0,
+lr=0.002,
+dataset='kirc',
+missing_rate=0.0,
+data_path='data/',
+survival_data_path='data/survival',
+clinical_data_path='data/clinical',
+device='cuda',
+output_dir='DCMC\\kirc_msrt_0.0_tau_0.5_bs_1024_blr_0.0005',
+print_freq=50,
+start_epoch=0,
+num_workers=8,
+seed=0,
+pin_mem=True,
+blr=0.0005,
+train_id=0,
+cuda=True,
+n_sample=183)
+DCMC(
+  (online_encoder): ModuleList(
+    (0): FCN(
+      (ffn): Sequential(
+        (0): Linear(in_features=2000, out_features=1024, bias=False)
+        (1): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ReLU()
+        (3): Dropout(p=0.2, inplace=False)
+        (4): Linear(in_features=1024, out_features=1024, bias=False)
+        (5): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ReLU()
+        (7): Dropout(p=0.2, inplace=False)
+        (8): Linear(in_features=1024, out_features=1024, bias=False)
+        (9): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (10): ReLU()
+        (11): Linear(in_features=1024, out_features=128, bias=False)
+        (12): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+      )
+    )
+    (1): FCN(
+      (ffn): Sequential(
+        (0): Linear(in_features=796, out_features=1024, bias=False)
+        (1): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ReLU()
+        (3): Dropout(p=0.2, inplace=False)
+        (4): Linear(in_features=1024, out_features=1024, bias=False)
+        (5): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ReLU()
+        (7): Dropout(p=0.2, inplace=False)
+        (8): Linear(in_features=1024, out_features=1024, bias=False)
+        (9): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (10): ReLU()
+        (11): Linear(in_features=1024, out_features=128, bias=False)
+        (12): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+      )
+    )
+    (2): FCN(
+      (ffn): Sequential(
+        (0): Linear(in_features=2000, out_features=1024, bias=False)
+        (1): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ReLU()
+        (3): Dropout(p=0.2, inplace=False)
+        (4): Linear(in_features=1024, out_features=1024, bias=False)
+        (5): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ReLU()
+        (7): Dropout(p=0.2, inplace=False)
+        (8): Linear(in_features=1024, out_features=1024, bias=False)
+        (9): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (10): ReLU()
+        (11): Linear(in_features=1024, out_features=128, bias=False)
+        (12): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+      )
+    )
+  )
+  (target_encoder): ModuleList(
+    (0): FCN(
+      (ffn): Sequential(
+        (0): Linear(in_features=2000, out_features=1024, bias=False)
+        (1): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ReLU()
+        (3): Dropout(p=0.2, inplace=False)
+        (4): Linear(in_features=1024, out_features=1024, bias=False)
+        (5): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ReLU()
+        (7): Dropout(p=0.2, inplace=False)
+        (8): Linear(in_features=1024, out_features=1024, bias=False)
+        (9): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (10): ReLU()
+        (11): Linear(in_features=1024, out_features=128, bias=False)
+        (12): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+      )
+    )
+    (1): FCN(
+      (ffn): Sequential(
+        (0): Linear(in_features=796, out_features=1024, bias=False)
+        (1): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ReLU()
+        (3): Dropout(p=0.2, inplace=False)
+        (4): Linear(in_features=1024, out_features=1024, bias=False)
+        (5): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ReLU()
+        (7): Dropout(p=0.2, inplace=False)
+        (8): Linear(in_features=1024, out_features=1024, bias=False)
+        (9): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (10): ReLU()
+        (11): Linear(in_features=1024, out_features=128, bias=False)
+        (12): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+      )
+    )
+    (2): FCN(
+      (ffn): Sequential(
+        (0): Linear(in_features=2000, out_features=1024, bias=False)
+        (1): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ReLU()
+        (3): Dropout(p=0.2, inplace=False)
+        (4): Linear(in_features=1024, out_features=1024, bias=False)
+        (5): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ReLU()
+        (7): Dropout(p=0.2, inplace=False)
+        (8): Linear(in_features=1024, out_features=1024, bias=False)
+        (9): BatchNorm1d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (10): ReLU()
+        (11): Linear(in_features=1024, out_features=128, bias=False)
+        (12): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=False, track_running_stats=True)
+      )
+    )
+  )
+  (cross_view_decoder): ModuleList(
+    (0): MLP(
+      (mlp): Sequential(
+        (0): Linear(in_features=128, out_features=512, bias=True)
+        (1): ReLU()
+        (2): Linear(in_features=512, out_features=128, bias=True)
+      )
+    )
+    (1): MLP(
+      (mlp): Sequential(
+        (0): Linear(in_features=128, out_features=512, bias=True)
+        (1): ReLU()
+        (2): Linear(in_features=512, out_features=128, bias=True)
+      )
+    )
+    (2): MLP(
+      (mlp): Sequential(
+        (0): Linear(in_features=128, out_features=512, bias=True)
+        (1): ReLU()
+        (2): Linear(in_features=512, out_features=128, bias=True)
+      )
+    )
+  )
+  (cl): ContrastiveLoss()
+)
+Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.99)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: False
+    lr: 0.002
+    maximize: False
+    weight_decay: 0
+)
+
+>> Start training 0-th initial, seed: 0,
